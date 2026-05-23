@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: finanzas-miguel
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: EXCEL_PATH
+        value: Finanzas_Miguel_2026.xlsx
+      - key: CLAUDE_API_KEY
+        sync: false   # Lo añades tú en el panel de Render (opcional)
