@@ -1,6 +1,6 @@
 """
 Gestor de Finanzas — Backend Flask
-Diseño: tonos marrones/beige, glassmorphism, hover effects, logo MN
+Diseño: periódico antiguo, papel envejecido, tipografía clásica serif
 """
 
 from flask import Flask, request, jsonify, render_template_string
@@ -112,408 +112,510 @@ HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>MN · Finanzas</title>
+<title>MN · Ledger</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&display=swap');
 
 :root {
-  --bg1: #C8B8A2;
-  --bg2: #B8A590;
-  --bg3: #A89278;
-  --glass: rgba(210,195,175,0.45);
-  --glass2: rgba(235,225,210,0.55);
-  --glass-border: rgba(255,248,238,0.5);
-  --dark: #2C1F14;
-  --dark2: #3D2E1E;
-  --mid: #6B5240;
-  --muted: #9A8470;
-  --cream: #F5EEE4;
-  --green: #4A7C5A;
-  --green-bg: rgba(74,124,90,0.15);
-  --red: #8B3A2E;
-  --red-bg: rgba(139,58,46,0.15);
-  --gold: #C4914A;
+  --paper:   #F0E6C8;
+  --paper2:  #E8D9B0;
+  --paper3:  #DDD0A0;
+  --ink:     #0F0A04;
+  --ink2:    #2A1F0E;
+  --ink3:    #4A3820;
+  --ink4:    #6B5535;
+  --faded:   #8C7A5A;
+  --red:     #7A1515;
+  --green:   #1A4A2A;
+  --rule:    #2A1F0E;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(145deg, #D4C4AE 0%, #C2AF97 40%, #B09878 100%);
+  font-family: 'IM Fell English', Georgia, serif;
+  background: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(180,150,80,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(120,90,40,0.12) 0%, transparent 50%);
   min-height: 100vh;
+  color: var(--ink);
   padding-bottom: 60px;
-  color: var(--dark);
 }
 
-/* ── Navbar ── */
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: rgba(44,31,20,0.12);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--glass-border);
+/* ── MASTHEAD ── */
+.masthead {
+  border-bottom: 3px double var(--rule);
+  padding: 12px 16px 10px;
+  background: var(--paper);
   position: sticky;
   top: 0;
   z-index: 50;
 }
 
-.logo {
+.mast-top {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
-.logo-svg { width: 42px; height: 42px; }
-
-.logo-text {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--dark);
-  letter-spacing: 1px;
-}
-
-.nav-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--mid);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.nav-date {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-/* ── Stats bar ── */
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  padding: 16px;
-}
-
-.stat {
-  background: var(--glass2);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 14px 10px;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: default;
-}
-
-.stat:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(44,31,20,0.15);
-}
-
-.stat .v {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--dark);
-}
-
-.stat .l {
-  font-size: 9px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 3px;
-}
-
-.stat.g .v { color: var(--green); }
-.stat.r .v { color: var(--red); }
-.stat.b .v { color: var(--gold); }
-
-/* ── Cards ── */
-.card {
-  margin: 0 16px 16px;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(44,31,20,0.1);
-}
-
-.ch {
-  padding: 14px 18px;
-  font-family: 'Playfair Display', serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--cream);
-  background: rgba(44,31,20,0.65);
-  backdrop-filter: blur(10px);
+.mast-logo {
   display: flex;
   align-items: center;
   gap: 8px;
-  letter-spacing: 0.3px;
 }
 
-.ia { padding: 16px; }
+.logo-svg { width: 38px; height: 38px; }
 
-/* ── Labels ── */
-label {
+.mast-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.mast-sub {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
   font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 6px;
-  text-transform: uppercase;
+  color: var(--ink4);
   letter-spacing: 1px;
 }
 
-/* ── Tipo toggle ── */
-.tipo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.mast-date {
+  font-family: 'IM Fell English', serif;
+  font-size: 10px;
+  color: var(--ink3);
+  text-align: right;
+  font-style: italic;
+}
+
+.mast-rule {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: 6px 0 0;
+}
+
+.mast-headline {
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-top: 4px;
+}
+
+/* ── STATS / LEDGER HEADER ── */
+.ledger-bar {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr 1px 1fr;
+  margin: 12px 16px;
+  border: 1.5px solid var(--rule);
+  background: var(--paper2);
+}
+
+.ledger-col {
+  padding: 12px 8px;
+  text-align: center;
+  transition: background 0.2s ease;
+  cursor: default;
+}
+
+.ledger-col:hover { background: var(--paper3); }
+
+.ledger-divider {
+  background: var(--rule);
+  width: 1px;
+}
+
+.ledger-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.ledger-lbl {
+  font-family: 'IM Fell English', serif;
+  font-size: 9px;
+  font-style: italic;
+  color: var(--ink4);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.ledger-col.cr .ledger-val { color: var(--green); }
+.ledger-col.db .ledger-val { color: var(--red); }
+
+/* ── SECTION HEADERS ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 14px 16px 8px;
+}
+
+.sh-line { flex: 1; height: 1px; background: var(--rule); }
+.sh-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 0 10px;
+}
+
+/* ── CARDS / PANELS ── */
+.panel {
+  margin: 0 16px 14px;
+  border: 1.5px solid var(--rule);
+  background: var(--paper2);
+}
+
+.panel-head {
+  border-bottom: 1px solid var(--rule);
+  padding: 8px 14px;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+  background: var(--paper3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-body { padding: 14px; }
+
+/* ── LABELS ── */
+label {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink3);
+  display: block;
+  margin-bottom: 5px;
+  letter-spacing: 0.5px;
+}
+
+/* ── TIPO TOGGLE ── */
+.tipo { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 12px; border: 1.5px solid var(--rule); }
 
 .tb {
-  padding: 12px;
-  border: 1.5px solid rgba(107,82,64,0.3);
-  border-radius: 12px;
-  background: rgba(235,225,210,0.3);
+  padding: 11px;
+  border: none;
+  border-right: 1px solid var(--rule);
+  background: var(--paper2);
+  font-family: 'Playfair Display', serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   text-align: center;
-  color: var(--mid);
-  transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
+  color: var(--ink3);
+  transition: all 0.15s ease;
+  letter-spacing: 0.5px;
 }
 
-.tb:hover {
-  background: rgba(235,225,210,0.6);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(44,31,20,0.12);
+.tb:last-child { border-right: none; }
+
+.tb:hover { background: var(--paper3); }
+
+.tb.gasto.sel  {
+  background: var(--ink);
+  color: var(--paper);
+}
+.tb.ingreso.sel {
+  background: var(--green);
+  color: var(--paper);
 }
 
-.tb.gasto.sel  { border-color: var(--red);   background: var(--red-bg);   color: var(--red); }
-.tb.ingreso.sel { border-color: var(--green); background: var(--green-bg); color: var(--green); }
-
-/* ── Inputs ── */
-.row2 { display: grid; grid-template-columns: 1fr 95px; gap: 8px; margin-bottom: 12px; }
+/* ── INPUTS ── */
+.row2 { display: grid; grid-template-columns: 1fr 90px; gap: 8px; margin-bottom: 10px; }
 
 input {
   width: 100%;
-  padding: 13px 15px;
-  border: 1.5px solid rgba(107,82,64,0.25);
-  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--ink3);
+  border-radius: 0;
   font-size: 15px;
-  color: var(--dark);
-  background: rgba(245,238,228,0.5);
+  color: var(--ink);
+  background: var(--paper);
   outline: none;
   -webkit-appearance: none;
-  font-family: 'Inter', sans-serif;
-  transition: all 0.2s ease;
+  font-family: 'IM Fell English', Georgia, serif;
+  transition: all 0.15s ease;
 }
 
 input:focus {
-  border-color: var(--gold);
-  background: rgba(245,238,228,0.85);
-  box-shadow: 0 0 0 3px rgba(196,145,74,0.15);
+  border-color: var(--ink);
+  background: #FFF8E8;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
-input::placeholder { color: rgba(107,82,64,0.5); }
+input::placeholder {
+  color: var(--faded);
+  font-style: italic;
+}
 
-/* ── Quick examples ── */
-.exs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+/* ── QUICK EXAMPLES ── */
+.exs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
 
 .ex {
-  padding: 6px 12px;
-  background: rgba(196,145,74,0.15);
-  color: var(--dark2);
-  border: 1px solid rgba(196,145,74,0.3);
-  border-radius: 20px;
+  padding: 5px 10px;
+  background: transparent;
+  color: var(--ink3);
+  border: 1px solid var(--ink4);
+  font-family: 'IM Fell English', serif;
   font-size: 11px;
-  font-weight: 500;
+  font-style: italic;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
+  transition: all 0.15s ease;
 }
 
 .ex:hover {
-  background: rgba(196,145,74,0.3);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(44,31,20,0.12);
 }
 
-.ex:active { transform: scale(0.96); }
+.ex:active { transform: scale(0.97); }
 
-/* ── Category buttons ── */
-.cats { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 14px; }
+/* ── CATEGORY BUTTONS ── */
+.cats { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; margin-bottom: 12px; }
 
 .cb {
-  padding: 9px 3px;
-  border: 1.5px solid rgba(107,82,64,0.2);
-  border-radius: 11px;
-  background: rgba(245,238,228,0.35);
+  padding: 8px 3px;
+  border: 1px solid var(--ink4);
+  background: var(--paper);
+  font-family: 'IM Fell English', serif;
   font-size: 10px;
-  font-weight: 500;
+  font-style: italic;
   text-align: center;
   cursor: pointer;
-  color: var(--mid);
-  transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
+  color: var(--ink3);
+  transition: all 0.15s ease;
 }
 
 .cb:hover {
-  background: rgba(245,238,228,0.7);
-  border-color: var(--gold);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(44,31,20,0.12);
+  background: var(--paper3);
+  border-color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0 var(--ink4);
 }
 
 .cb.sel {
-  border-color: var(--gold);
-  background: rgba(196,145,74,0.2);
-  color: var(--dark);
-  font-weight: 700;
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
 
-.cb span { display: block; font-size: 16px; margin-bottom: 3px; }
+.cb span { display: block; font-size: 15px; margin-bottom: 2px; font-style: normal; }
 
-/* ── Submit button ── */
+/* ── SUBMIT BUTTON ── */
 .btn {
   width: 100%;
-  padding: 15px;
-  background: rgba(44,31,20,0.75);
-  color: var(--cream);
-  border: 1px solid rgba(255,248,238,0.2);
-  border-radius: 13px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
+  padding: 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 2px solid var(--ink);
   font-family: 'Playfair Display', serif;
-  letter-spacing: 0.5px;
-  backdrop-filter: blur(10px);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn:hover {
-  background: rgba(44,31,20,0.9);
+  background: var(--ink2);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(44,31,20,0.25);
+  box-shadow: 3px 3px 0 var(--ink4);
 }
 
-.btn:active { transform: scale(0.98); }
-.btn:disabled { background: rgba(107,82,64,0.3); color: var(--muted); cursor: not-allowed; transform: none; }
+.btn:active { transform: translateY(0); box-shadow: none; }
+.btn:disabled { background: var(--faded); border-color: var(--faded); cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* ── Toast ── */
+/* ── TOAST ── */
 .toast {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(120px);
-  background: rgba(44,31,20,0.92);
-  color: var(--cream);
-  padding: 13px 24px;
-  border-radius: 50px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 11px 22px;
+  border: 1px solid var(--paper3);
+  font-family: 'IM Fell English', serif;
   font-size: 13px;
-  font-weight: 500;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  font-style: italic;
+  transition: transform 0.3s ease;
   z-index: 100;
   white-space: nowrap;
-  box-shadow: 0 8px 32px rgba(44,31,20,0.3);
-  border: 1px solid rgba(255,248,238,0.15);
-  font-family: 'Inter', sans-serif;
+  box-shadow: 4px 4px 0 var(--ink3);
 }
 
 .toast.show { transform: translateX(-50%) translateY(0); }
-.toast.ok  { background: rgba(36,76,46,0.92); }
-.toast.err { background: rgba(100,30,20,0.92); }
+.toast.ok  { background: var(--green); }
+.toast.err { background: var(--red); }
 
-/* ── Transaction list ── */
+/* ── TRANSACTION ROWS ── */
 .txn {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(107,82,64,0.12);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--paper3);
   gap: 12px;
-  transition: background 0.2s ease;
+  transition: background 0.15s ease;
   cursor: default;
 }
 
-.txn:hover { background: rgba(245,238,228,0.35); }
+.txn:hover { background: var(--paper); }
 .txn:last-child { border-bottom: none; }
 
 .ti {
-  width: 40px; height: 40px;
-  border-radius: 12px;
+  width: 34px; height: 34px;
+  border: 1px solid var(--ink4);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
   flex-shrink: 0;
-  background: rgba(245,238,228,0.6);
-  border: 1px solid rgba(196,145,74,0.2);
-  transition: transform 0.2s ease;
+  background: var(--paper);
+  transition: transform 0.15s ease;
 }
 
-.txn:hover .ti { transform: scale(1.08); }
+.txn:hover .ti { transform: scale(1.1); }
 
 .td { flex: 1; min-width: 0; }
-.tn { font-size: 13px; font-weight: 600; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tm { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.ta { font-size: 15px; font-weight: 700; flex-shrink: 0; font-family: 'Playfair Display', serif; }
+
+.tn {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tm {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 10px;
+  color: var(--ink4);
+  margin-top: 1px;
+}
+
+.ta {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .ta.g { color: var(--green); }
 .ta.r { color: var(--red); }
 
-.empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 13px; }
-.empty big { display: block; font-size: 38px; margin-bottom: 10px; }
+.empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--faded);
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 14px;
+}
 
-/* ── Divider ── */
-.divider { height: 1px; background: linear-gradient(to right, transparent, rgba(196,145,74,0.3), transparent); margin: 4px 16px; }
+.empty big { display: block; font-size: 32px; margin-bottom: 10px; font-style: normal; }
+
+/* ── RULE ORNAMENT ── */
+.ornament {
+  text-align: center;
+  color: var(--ink4);
+  font-size: 14px;
+  margin: 4px 0 10px;
+  letter-spacing: 6px;
+}
 </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<div class="nav">
-  <div class="logo">
-    <!-- Globe MN SVG -->
-    <svg class="logo-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="40" cy="40" r="34" stroke="#2C1F14" stroke-width="1.5" fill="none"/>
-      <ellipse cx="40" cy="40" rx="34" ry="14" stroke="#2C1F14" stroke-width="1" fill="none" opacity="0.6"/>
-      <ellipse cx="40" cy="40" rx="34" ry="24" stroke="#2C1F14" stroke-width="1" fill="none" opacity="0.4"/>
-      <ellipse cx="40" cy="40" rx="20" ry="34" stroke="#2C1F14" stroke-width="1" fill="none" opacity="0.5"/>
-      <ellipse cx="40" cy="40" rx="8" ry="34" stroke="#2C1F14" stroke-width="1" fill="none" opacity="0.4"/>
-      <line x1="6" y1="40" x2="74" y2="40" stroke="#2C1F14" stroke-width="1" opacity="0.3"/>
-      <line x1="40" y1="6" x2="40" y2="74" stroke="#2C1F14" stroke-width="1" opacity="0.3"/>
-      <text x="40" y="47" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#2C1F14" text-anchor="middle" letter-spacing="1">MN</text>
-    </svg>
-    <span class="logo-text">MN</span>
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="mast-top">
+    <div class="mast-logo">
+      <svg class="logo-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="34" stroke="#0F0A04" stroke-width="1.5" fill="none"/>
+        <ellipse cx="40" cy="40" rx="34" ry="13" stroke="#0F0A04" stroke-width="1" fill="none" opacity="0.5"/>
+        <ellipse cx="40" cy="40" rx="34" ry="22" stroke="#0F0A04" stroke-width="1" fill="none" opacity="0.35"/>
+        <ellipse cx="40" cy="40" rx="19" ry="34" stroke="#0F0A04" stroke-width="1" fill="none" opacity="0.45"/>
+        <ellipse cx="40" cy="40" rx="7"  ry="34" stroke="#0F0A04" stroke-width="1" fill="none" opacity="0.35"/>
+        <line x1="6" y1="40" x2="74" y2="40" stroke="#0F0A04" stroke-width="0.8" opacity="0.3"/>
+        <line x1="40" y1="6"  x2="40" y2="74" stroke="#0F0A04" stroke-width="0.8" opacity="0.3"/>
+        <text x="40" y="47" font-family="Georgia,serif" font-size="19" font-weight="700" fill="#0F0A04" text-anchor="middle" letter-spacing="1">MN</text>
+      </svg>
+      <div>
+        <div class="mast-brand">MN</div>
+        <div class="mast-sub">Personal Finance Ledger</div>
+      </div>
+    </div>
+    <div class="mast-date" id="fecha-mast"></div>
   </div>
-  <span class="nav-title">Finanzas</span>
-  <span class="nav-date" id="fecha"></span>
+  <hr class="mast-rule">
+  <div class="mast-headline">Est. MMXXVI &nbsp;·&nbsp; Registro de Cuentas &nbsp;·&nbsp; Edición Personal</div>
 </div>
 
-<!-- Stats -->
-<div class="stats">
-  <div class="stat g"><div class="v" id="si">—</div><div class="l">Ingresos</div></div>
-  <div class="stat r"><div class="v" id="sg">—</div><div class="l">Gastos</div></div>
-  <div class="stat b"><div class="v" id="ss">—</div><div class="l">Saldo</div></div>
+<!-- LEDGER STATS -->
+<div class="ledger-bar">
+  <div class="ledger-col cr">
+    <div class="ledger-val" id="si">—</div>
+    <div class="ledger-lbl">Haber</div>
+  </div>
+  <div class="ledger-divider"></div>
+  <div class="ledger-col db">
+    <div class="ledger-val" id="sg">—</div>
+    <div class="ledger-lbl">Debe</div>
+  </div>
+  <div class="ledger-divider"></div>
+  <div class="ledger-col">
+    <div class="ledger-val" id="ss">—</div>
+    <div class="ledger-lbl">Saldo</div>
+  </div>
 </div>
 
-<!-- Nueva transacción -->
-<div class="card">
-  <div class="ch">✦ &nbsp;Nueva transacción</div>
-  <div class="ia">
-    <label>Tipo de movimiento</label>
+<div class="ornament">— ✦ —</div>
+
+<!-- NUEVA TRANSACCIÓN -->
+<div class="section-head">
+  <div class="sh-line"></div>
+  <div class="sh-text">Nuevo Asiento</div>
+  <div class="sh-line"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">
+    <span>Registrar Movimiento</span>
+    <span style="font-style:italic;font-weight:400;font-size:11px;color:var(--ink4)">La IA clasifica automáticamente</span>
+  </div>
+  <div class="panel-body">
+
+    <label>Naturaleza del movimiento</label>
     <div class="tipo">
-      <button class="tb gasto sel" onclick="setTipo('Gasto')">↓ Gasto</button>
-      <button class="tb ingreso" onclick="setTipo('Ingreso')">↑ Ingreso</button>
+      <button class="tb gasto sel" onclick="setTipo('Gasto')">↓ &nbsp;Cargo / Gasto</button>
+      <button class="tb ingreso" onclick="setTipo('Ingreso')">↑ &nbsp;Abono / Ingreso</button>
     </div>
 
-    <label>Descripción &amp; Monto</label>
+    <label>Concepto e importe</label>
     <div class="row2">
       <input type="text" id="desc" placeholder="pan, gasolina, salario…" autocomplete="off" autocorrect="off" spellcheck="false">
       <input type="number" id="monto" placeholder="€" step="0.01" min="0">
@@ -528,7 +630,7 @@ input::placeholder { color: rgba(107,82,64,0.5); }
       <button class="ex" onclick="q('salario',1500,true)">💼 Salario</button>
     </div>
 
-    <label>Categoría <span style="text-transform:none;letter-spacing:0;font-weight:400;opacity:.7">(opcional · la detecta sola)</span></label>
+    <label>Partida contable <span style="font-weight:400">(opcional)</span></label>
     <div class="cats">
       <button class="cb" data-cat="Comida"      onclick="setCat(this)"><span>🍽️</span>Comida</button>
       <button class="cb" data-cat="Hogar"       onclick="setCat(this)"><span>🏠</span>Hogar</button>
@@ -540,16 +642,23 @@ input::placeholder { color: rgba(107,82,64,0.5); }
       <button class="cb" data-cat="Otros"       onclick="setCat(this)"><span>📦</span>Otros</button>
     </div>
 
-    <button class="btn" id="btn" onclick="enviar()">Registrar movimiento</button>
+    <button class="btn" id="btn" onclick="enviar()">Asentar en el Libro</button>
   </div>
 </div>
 
-<div class="divider"></div>
+<!-- HISTORIAL -->
+<div class="section-head">
+  <div class="sh-line"></div>
+  <div class="sh-text">Últimos Asientos</div>
+  <div class="sh-line"></div>
+</div>
 
-<!-- Historial -->
-<div class="card">
-  <div class="ch">◈ &nbsp;Últimos movimientos <span id="cnt" style="font-size:10px;opacity:.5;margin-left:6px;font-family:Inter,sans-serif;font-weight:400"></span></div>
-  <div id="list"><div class="empty"><big>◎</big>Cargando movimientos…</div></div>
+<div class="panel">
+  <div class="panel-head">
+    <span>Libro Mayor</span>
+    <span id="cnt" style="font-style:italic;font-weight:400;font-size:11px;color:var(--ink4)"></span>
+  </div>
+  <div id="list"><div class="empty"><big>✦</big>Sin asientos registrados</div></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -558,102 +667,110 @@ input::placeholder { color: rgba(107,82,64,0.5); }
 const ICONS={Comida:'🍽️',Hogar:'🏠',Transporte:'🚗',Salud:'💊',Ocio:'🎉',Inversiones:'📈',Trabajo:'💼',Ingresos:'💰',Otros:'📦'};
 let tipo='Gasto', cat=null;
 
-// Fecha actual
-const now=new Date();
-document.getElementById('fecha').textContent=now.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+const now = new Date();
+const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+document.getElementById('fecha-mast').innerHTML =
+  dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()] + ' de ' + now.getFullYear();
 
-function setTipo(t){
-  tipo=t;
-  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('sel'));
-  document.querySelector('.tb.'+t.toLowerCase()).classList.add('sel');
+function setTipo(t) {
+  tipo = t;
+  document.querySelectorAll('.tb').forEach(b => b.classList.remove('sel'));
+  document.querySelector('.tb.' + t.toLowerCase()).classList.add('sel');
 }
 
-function setCat(b){
-  document.querySelectorAll('.cb').forEach(x=>x.classList.remove('sel'));
-  if(cat===b.dataset.cat){cat=null}else{cat=b.dataset.cat;b.classList.add('sel');}
+function setCat(b) {
+  document.querySelectorAll('.cb').forEach(x => x.classList.remove('sel'));
+  if (cat === b.dataset.cat) { cat = null; }
+  else { cat = b.dataset.cat; b.classList.add('sel'); }
 }
 
-function q(d,m,ing=false){
-  document.getElementById('desc').value=d;
-  document.getElementById('monto').value=m;
-  if(ing)setTipo('Ingreso');else setTipo('Gasto');
+function q(d, m, ing=false) {
+  document.getElementById('desc').value = d;
+  document.getElementById('monto').value = m;
+  if (ing) setTipo('Ingreso'); else setTipo('Gasto');
 }
 
-function fmt(n){
-  if(n===0)return '0€';
-  return n>=1000?(n/1000).toFixed(1)+'k€':n.toFixed(0)+'€';
+function fmt(n) {
+  if (n === 0) return '0,00 €';
+  return n.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
 }
 
-function toast(msg,type){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast '+type;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3200);
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-async function stats(){
-  try{
-    const r=await fetch('/api/stats');
-    const d=await r.json();
-    document.getElementById('si').textContent=fmt(d.ingresos);
-    document.getElementById('sg').textContent=fmt(d.gastos);
-    const s=d.ingresos-d.gastos;
-    document.getElementById('ss').textContent=(s<0?'-':'')+fmt(Math.abs(s));
-  }catch(e){}
+async function stats() {
+  try {
+    const r = await fetch('/api/stats');
+    const d = await r.json();
+    document.getElementById('si').textContent = fmt(d.ingresos);
+    document.getElementById('sg').textContent = fmt(d.gastos);
+    const s = d.ingresos - d.gastos;
+    document.getElementById('ss').textContent = (s < 0 ? '-' : '') + fmt(Math.abs(s));
+    document.getElementById('ss').style.color = s >= 0 ? 'var(--green)' : 'var(--red)';
+  } catch(e) {}
 }
 
-async function hist(){
-  try{
-    const r=await fetch('/api/transacciones?limit=15');
-    const d=await r.json();
-    const txns=d.transacciones||[];
-    document.getElementById('cnt').textContent=txns.length+' recientes';
-    if(!txns.length){
-      document.getElementById('list').innerHTML='<div class="empty"><big>◎</big>¡Añade tu primer movimiento!</div>';
+async function hist() {
+  try {
+    const r = await fetch('/api/transacciones?limit=15');
+    const d = await r.json();
+    const txns = d.transacciones || [];
+    document.getElementById('cnt').textContent = txns.length + ' entradas';
+    if (!txns.length) {
+      document.getElementById('list').innerHTML = '<div class="empty"><big>✦</big>El libro mayor está vacío.<br>Registre el primer asiento.</div>';
       return;
     }
-    document.getElementById('list').innerHTML=txns.map(t=>`
+    document.getElementById('list').innerHTML = txns.map(t => `
       <div class="txn">
-        <div class="ti">${ICONS[t.categoria]||'📦'}</div>
+        <div class="ti">${ICONS[t.categoria] || '📦'}</div>
         <div class="td">
           <div class="tn">${t.descripcion}</div>
-          <div class="tm">${t.categoria} · ${t.fecha}</div>
+          <div class="tm">${t.categoria} &nbsp;·&nbsp; ${t.fecha}</div>
         </div>
-        <div class="ta ${t.tipo==='Ingreso'?'g':'r'}">${t.tipo==='Ingreso'?'+':'-'}${parseFloat(t.monto).toFixed(2)}€</div>
+        <div class="ta ${t.tipo === 'Ingreso' ? 'g' : 'r'}">${t.tipo === 'Ingreso' ? '+' : '-'}${parseFloat(t.monto).toLocaleString('es-ES',{minimumFractionDigits:2})} €</div>
       </div>`).join('');
-  }catch(e){
-    document.getElementById('list').innerHTML='<div class="empty"><big>⚠</big>Sin conexión</div>';
+  } catch(e) {
+    document.getElementById('list').innerHTML = '<div class="empty"><big>⚠</big>Error de conexión</div>';
   }
 }
 
-async function enviar(){
-  const desc=document.getElementById('desc').value.trim();
-  const monto=parseFloat(document.getElementById('monto').value);
-  if(!desc){toast('Escribe una descripción','err');return;}
-  if(!monto||monto<=0){toast('Escribe un monto válido','err');return;}
-  const btn=document.getElementById('btn');
-  btn.disabled=true;btn.textContent='Guardando…';
-  try{
-    const body={descripcion:desc,monto,tipo};
-    if(cat)body.categoria=cat;
-    const r=await fetch('/api/transaccion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const d=await r.json();
-    if(d.ok){
-      toast(`${d.categoria}  ·  ${monto.toFixed(2)}€  guardado`,'ok');
-      document.getElementById('desc').value='';
-      document.getElementById('monto').value='';
-      cat=null;
-      document.querySelectorAll('.cb').forEach(b=>b.classList.remove('sel'));
-      await stats();await hist();
-    }else toast('Error: '+(d.error||'desconocido'),'err');
-  }catch(e){toast('Sin conexión','err');}
-  finally{btn.disabled=false;btn.textContent='Registrar movimiento';}
+async function enviar() {
+  const desc  = document.getElementById('desc').value.trim();
+  const monto = parseFloat(document.getElementById('monto').value);
+  if (!desc)  { toast('Indique un concepto', 'err'); return; }
+  if (!monto || monto <= 0) { toast('Indique un importe válido', 'err'); return; }
+  const btn = document.getElementById('btn');
+  btn.disabled = true; btn.textContent = 'Registrando…';
+  try {
+    const body = { descripcion: desc, monto, tipo };
+    if (cat) body.categoria = cat;
+    const r = await fetch('/api/transaccion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.ok) {
+      toast(`Asentado — ${d.categoria} · ${monto.toLocaleString('es-ES',{minimumFractionDigits:2})} €`, 'ok');
+      document.getElementById('desc').value = '';
+      document.getElementById('monto').value = '';
+      cat = null;
+      document.querySelectorAll('.cb').forEach(b => b.classList.remove('sel'));
+      await stats(); await hist();
+    } else toast('Error: ' + (d.error || 'desconocido'), 'err');
+  } catch(e) { toast('Sin conexión', 'err'); }
+  finally { btn.disabled = false; btn.textContent = 'Asentar en el Libro'; }
 }
 
-['desc','monto'].forEach(id=>
-  document.getElementById(id).addEventListener('keypress',e=>{if(e.key==='Enter')enviar();})
+['desc','monto'].forEach(id =>
+  document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') enviar(); })
 );
 
-stats();hist();
+stats(); hist();
 </script>
 </body>
 </html>"""
